@@ -276,7 +276,7 @@ LavaLamp::LavaLamp ()
 		for (int tx = left-1; tx < right+1; tx++)
 		{
 			background[ty * WIDTH + tx] = bcolor;
-			background[ty * WIDTH + tx] += add_table[tx] * ((bcolor - 40) >>2 ) / span_table[ty];
+			background[ty * WIDTH + tx] += add_table[tx] * ((bcolor - 40) >> 2) / span_table[ty];
 		}
 	}
 
@@ -545,9 +545,6 @@ void BlobPair::physics (void)
               
    if (dist > (size*size) / 4)
    {
-      int cur_len = ((vel[0].x>>8) * (vel[0].x>>8) +
-                    (vel[0].y>>8) * (vel[0].y>>8));
-      
       vel[0].x += ((pos[1].x-pos[0].x) >> ATTRACT) / sqrt(dist);
       vel[0].y += ((pos[1].y-pos[0].y) >> ATTRACT) / sqrt(dist);
       
@@ -560,63 +557,36 @@ void BlobPair::physics (void)
 void BlobPair::render (void)
 {
    int tx, ty, range, top, bottom;
-   int t_yoff, b_yoff, toff, boff;
+   int off, t_yoff, b_yoff, toff, boff;
 
-   int off0 = ((pos[0].y>>16)-(size>>1)) * LavaLamp::WIDTH +
-              ((pos[0].x>>16)-(size>>1));
-
-   int off1 = ((pos[1].y>>16)-(size>>1)) * LavaLamp::WIDTH +
-              ((pos[1].x>>16)-(size>>1));   
-
-   //Clipping
-   top = (pos[0].y >> 16) - (size>>1);
-   bottom = (pos[0].y >> 16) + (size>>1);
-   
-   if (top >= LavaLamp::LAMP_BOTTOM) range = 0;
-   else if (bottom > LavaLamp::LAMP_BOTTOM) range = LavaLamp::LAMP_BOTTOM+2 - top;
-   else range = size;
-
-   t_yoff = 0, b_yoff = 0;   
-   for (ty=0; ty < range; ty++)
+   for (int p=0; p < 2; p++)
    {
-      for (tx=0; tx < size; tx++)
-      {
-         toff = t_yoff + tx;
-         boff = b_yoff + tx;
-               
-         if (layer[off0+boff] + blob_map[toff] > 255)
-            layer[off0+boff] = 255;
-         else
-            layer[off0+boff] += blob_map[toff];
-      }
-            
-      t_yoff += size;
-      b_yoff += LavaLamp::WIDTH;
-   }
-   
-   //Clipping
-   top = (pos[1].y >> 16) - (size>>1);
-   bottom = (pos[1].y >> 16) + (size>>1);
-   
-   if (top >= LavaLamp::LAMP_BOTTOM) range = 0;
-   else if (bottom > LavaLamp::LAMP_BOTTOM) range = LavaLamp::LAMP_BOTTOM+2 - top;
-   else range = size;
+	   int off = ((pos[p].y>>16)-(size>>1)) * LavaLamp::WIDTH +
+	              ((pos[p].x>>16)-(size>>1));
+	   //Clipping
+	   top = (pos[p].y >> 16) - (size>>1);
+	   bottom = (pos[p].y >> 16) + (size>>1);
+	   
+	   if (top >= LavaLamp::LAMP_BOTTOM) range = 0;
+	   else if (bottom > LavaLamp::LAMP_BOTTOM) range = LavaLamp::LAMP_BOTTOM+2 - top;
+	   else range = size;
 
-   t_yoff = 0, b_yoff = 0;
-   for (ty=0; ty < range; ty++)
-   {
-      for (tx=0; tx < size; tx++)
-      {
-         toff = t_yoff + tx;
-         boff = b_yoff + tx;
-               
-         if (layer[off1+boff] + blob_map[toff] > 255)
-            layer[off1+boff] = 255;
-         else
-            layer[off1+boff] += blob_map[toff];
-      }
-            
-      t_yoff += size;
-      b_yoff += LavaLamp::WIDTH;
-   }  
+	   t_yoff = 0, b_yoff = 0;   
+	   for (ty=0; ty < range; ty++)
+	   {
+	      for (tx=0; tx < size; tx++)
+	      {
+	         toff = t_yoff + tx;
+	         boff = b_yoff + tx;
+	               
+	         if (layer[off+boff] + blob_map[toff] > 255)
+	            layer[off+boff] = 255;
+	         else
+	            layer[off+boff] += blob_map[toff];
+	      }
+	            
+	      t_yoff += size;
+	      b_yoff += LavaLamp::WIDTH;
+	   }
+	}
 }
